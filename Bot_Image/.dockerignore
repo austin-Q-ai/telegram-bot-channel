@@ -1,0 +1,5 @@
+./voice_message
+./bot_user.db
+./demo_files
+./default_answer
+./config-dev.env

@@ -1,0 +1,5 @@
+aiogram == 2.5.3
+sqlalchemy==2.0.18
+python-dotenv>=1.0.0
+requests
+deepgram-sdk>=2.11.0

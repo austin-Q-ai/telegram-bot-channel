@@ -1,0 +1,2 @@
+ANSWER_1="I apologize, but my schedule is currently packed, and I'm unable to meet with anyone at the moment due to my busy workload."
+ANSWER_2="I apologize, but the environment around me is too noisy for a video call. Is it possible to have an chat instead? Thank you for your understanding!"
