@@ -17,6 +17,7 @@ from src.handle_issues.default_answer import ANSWER_1, ANSWER_2
 import requests
 from dotenv import load_dotenv
 import os
+import time
 
 load_dotenv(dotenv_path='config.env')
 
@@ -45,13 +46,13 @@ user_available = {}
 is_running = {}
 
 # loading Cube
-loading_cube ="Iphone-spinner-2.gif"
+loading_cube ="imgpsh_fullsize_anim (1).gif"
 
 # Mode to Select the Response Method: Text, Video, Hybird
 button = InlineKeyboardButton(text="Set Response Method", callback_data="Method")
-button1 = InlineKeyboardButton(text="Text", callback_data="Text")
-button2 = InlineKeyboardButton(text="Video", callback_data="Video")
-button3 = InlineKeyboardButton(text="Hybrid", callback_data="Hybrid")
+button1 = InlineKeyboardButton(text="📄 Text", callback_data="Text")
+button2 = InlineKeyboardButton(text="🎬 Video", callback_data="Video")
+button3 = InlineKeyboardButton(text="Hybrid 📄🎬", callback_data="Hybrid")
 
 method_choose = InlineKeyboardMarkup().add(button)
 method_items = InlineKeyboardMarkup().add(button1, button2, button3)
@@ -74,25 +75,31 @@ print("\n\n===================== Start Telegram Bot =======================\n\n"
 # Handle the click event of customer response method buttons
 @dp.callback_query_handler(text=["Method", "Text", "Video", "Hybrid"])
 async def check_button(call: types.CallbackQuery):
+    global Bot_name
     id = call["from"].id
     if is_running.get(str(id)):
         # Checking which button is pressed and respond accordingly
         if call.data == "Method":
+            print(call)
+            await bot.edit_message_text(chat_id=id, message_id=call["message"].message_id, text=f'Hi, It\'s {Bot_name} . How is it going? I can talk to you via text or video, and you can choose the approach that suits you best. If you would like to set the response method, please click the button.')
             await bot.send_message(chat_id=id, text="Please, select the response method.\n1. Text': I'll always reply with text.\n2. Video: I'll always respond with video\n3. Hybrid: I'll respond to texts and videos accordingly: text for text, voice for video.", reply_markup=method_items)
         elif call.data == "Text":
             user = crud.update_repsonse(db=db, id=id, response="Text")
+            await bot.edit_message_text(chat_id=id, message_id=call["message"].message_id, text="Please, select the response method.\n1. Text': I'll always reply with text.\n2. Video: I'll always respond with video\n3. Hybrid: I'll respond to texts and videos accordingly: text for text, voice for video.")
             if not user:
                 await bot.send_message(chat_id=id, text="Oops! Looks like there's a temporary glitch in setting the response method. Please wait a few minutes and try again by sending the message '/reset'. Apologies for any inconvenience caused!")
             else:
                 await bot.send_message(chat_id=id, text="Successfully completed. I will only reply with text. If you want to reset, send the message '/reset'.")
         elif call.data == "Video":
             user = crud.update_repsonse(db=db, id=id, response="Video")
+            await bot.edit_message_text(chat_id=id, message_id=call["message"].message_id, text="Please, select the response method.\n1. Text': I'll always reply with text.\n2. Video: I'll always respond with video\n3. Hybrid: I'll respond to texts and videos accordingly: text for text, voice for video.")
             if not user:
                 await bot.send_message(chat_id=id, text="Oops! Looks like there's a temporary glitch in setting the response method. Please wait a few minutes and try again by sending the message '/reset'. Apologies for any inconvenience caused!")
             else:
                 await bot.send_message(chat_id=id, text="Successfully completed. I will only reply with video. If you want to reset, send the message '/reset'.")
         elif call.data == "Hybrid":
             user = crud.update_repsonse(db=db, id=id, response="Hybrid")
+            await bot.edit_message_text(chat_id=id, message_id=call["message"].message_id, text="Please, select the response method.\n1. Text': I'll always reply with text.\n2. Video: I'll always respond with video\n3. Hybrid: I'll respond to texts and videos accordingly: text for text, voice for video.")
             if not user:
                 await bot.send_message(chat_id=id, text="Oops! Looks like there's a temporary glitch in setting the response method. Please wait a few minutes and try again by sending the message '/reset'. Apologies for any inconvenience caused!")
             else:
@@ -118,11 +125,13 @@ async def start_command(message: types.Message):
     user = crud.get_user_by_id(db=db, id=message.chat.id)
     if not user:
         if crud.create_user(db=db, id=message.chat.id):
-            await bot.send_message(chat_id=message.chat.id, text=f'Hi, It\'s {Bot_name} . How is it going? I can talk to you via text or video, and you can choose the approach that suits you best. If you would like to set the response method, please click the button.', reply_markup=method_choose)
+            choose_btn = await bot.send_message(chat_id=message.chat.id, text=f'Hi, It\'s {Bot_name} . How is it going? I can talk to you via text or video, and you can choose the approach that suits you best. If you would like to set the response method, please click the button.', reply_markup=method_choose)
+            print(choose_btn.message_id)
         else:
             await bot.send_message(chat_id=message.chat.id, text="I apologize, but my schedule is currently packed, and I'm unable to meet with anyone at the moment due to my busy workload.")
     elif user.response == None:
-        await bot.send_message(chat_id=message.chat.id, text=f'Hi, It\'s {Bot_name} . How is it going?', reply_markup=method_choose)
+        choose_btn = await bot.send_message(chat_id=message.chat.id, text=f'Hi, It\'s {Bot_name} . How is it going?', reply_markup=method_choose)
+        print(choose_btn.message_id)
     else:
         await bot.send_message(chat_id=message.chat.id, text=f'Hi, It\'s {Bot_name} . How is it going?')
 
@@ -159,9 +168,17 @@ async def handle_message(message: types.Message):
             cube = await bot.send_animation(chat_id=message.chat.id, animation = f, duration=0)
         # Making the answer - HongYu APIs
         print("---------------------- making answer ------------------------")
+        start_text = time.time()
         user = crud.get_user_by_id(db=db, id=message.chat.id)  # Find user with chat.id
+        if not user:
+            if crud.create_user(db=db, id=message.chat.id):
+                await bot.send_message(chat_id=message.chat.id, text=f'Nice to meet u. First of all, please set your response method. I can talk to you via text or video, and you can choose the approach that suits you best. If you would like to set the response method, please click the button.', reply_markup=method_choose)
+            else:
+                await bot.send_message(chat_id=message.chat.id, text="I apologize, but my schedule is currently packed, and I'm unable to meet with anyone at the moment due to my busy workload.")
         answer = text_response.get_response(chat_id=user.chat_id, text=text)  # request and receive to the HongYu API
+        end_answer = time.time()
         print("Answer: ", answer)
+        print("Making Answer Time: ",end_answer - start_text)
         # Check out user response method
         if answer == ANSWER_1: # The answer is default answer : handle errors
             brain_available = False
@@ -177,7 +194,10 @@ async def handle_message(message: types.Message):
                 await bot.send_message(chat_id=message.chat.id, text=answer)
             else:
                 print("---------------------- Genearting Video ------------------------")
+                start_video = time.time()
                 result = video_response.get_video_response(text=answer)
+                end_video = time.time()
+                print("Making Video Time: ", end_video - start_video)
                 if result == ANSWER_2:
                     video_available = False
                 await bot.delete_message(chat_id=message.chat.id, message_id=cube.message_id)
@@ -221,9 +241,17 @@ async def handle_voice(message: types.Message):
             cube = await bot.send_animation(chat_id=message.chat.id, animation = f, duration=0)
         print(cube)
         print("---------------------- making answer ------------------------")
+        start_text = time.time()
         user = crud.get_user_by_id(db=db, id=message.chat.id)  # Find user with chat.id
+        if not user:
+            if crud.create_user(db=db, id=message.chat.id):
+                await bot.send_message(chat_id=message.chat.id, text=f'Nice to meet u. First of all, please set your response method. I can talk to you via text or video, and you can choose the approach that suits you best. If you would like to set the response method, please click the button.', reply_markup=method_choose)
+            else:
+                await bot.send_message(chat_id=message.chat.id, text="I apologize, but my schedule is currently packed, and I'm unable to meet with anyone at the moment due to my busy workload.")
         answer = text_response.get_response(chat_id=user.chat_id, text=text)  # request and receive to the HongYu API
+        end_answer = time.time()
         print("Answer: ", answer)
+        print("Making Answer Time: ",end_answer - start_text)
         # Check out user response method
         if answer == ANSWER_1: # The answer is default answer : handle errors
             brain_available = False
@@ -239,14 +267,17 @@ async def handle_voice(message: types.Message):
                 await bot.send_message(chat_id=message.chat.id, text=answer)
             else:
                 print("---------------------- Genearting Video ------------------------")
+                start_video = time.time()
                 result = video_response.get_video_response(text=answer)
+                end_video = time.time()
+                print("Making Video Time: ", end_video - start_video)
                 if result == ANSWER_2:
                     video_available = False
                 await bot.delete_message(chat_id=message.chat.id, message_id=cube.message_id)
                 if video_available:
                     user_available[str(message.chat.id)] = video_available
                     await bot.send_video(chat_id=message.chat.id, video = result, duration=0)
-                elif video_available != user_available[str(message.chat.id)]:
+                elif video_available==False and video_available != user_available[str(message.chat.id)]:
                     user_available[str(message.chat.id)] = video_available
                     await bot.send_message(chat_id=message.chat.id, text=answer +"\n"+ result)
                 else:
