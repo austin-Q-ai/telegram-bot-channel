@@ -1,79 +1,93 @@
+import sys
+import socket
+from datetime import datetime
 import docker
 dockerClient = docker.from_env()
 
-
+# get list of containers
 def getContainers():
     containersReturn = []
     containers = dockerClient.containers.list(all=True)
     for container in containers:
+        containersReturn.append(container.id)
         print(container.id)
     return containersReturn
 
+# get status of containers with container_id
+def get_status_Containers(container_id:str):
+    try:
+        containers = dockerClient.containers.get(container_id)
+    except:
+        return None
+    container_state = containers.attrs["State"]
+    return container_state["Status"]
 
-def get_status_Containers():
-    containers = dockerClient.containers.get("3bc8f03d72eb3b49ffe17963fbbb5146c16134e4d50d5c67c86ff61076fe28dc")
-    status = containers.inspect()['Status']['State']
-    return status
+# create containers with loaded docker images
+def create_docker_run(image_name:str, user:int):
+    dockerClient.containers.run(image_name, "sleep infinity", detach=True)
 
-def removeContainers():
-    containers = getContainers()
-    for container in containers:
-        if imageName in str(container.image):
-            print("Deleting old container {}".format(container.name))
-            try:
-                container.stop()
-                container.remove()
-            except Exception as e:
-                print("Error deleting old container {}".format(container.name))
-                print(e)
+# checkout enabled ports
+def checkout_ports():
+    # Defining a target
+    ip = socket.gethostbyname (socket.gethostname())  #getting ip-address of host
+ 
+    for port in range(65535):      #check for all available ports
+    
+        try:
+    
+            serv = socket.socket(socket.AF_INET,socket.SOCK_STREAM) # create a new socket
+    
+            serv.bind((ip,port)) # bind socket with address
+                
+        except:
+    
+            print('[OPEN] Port open :',port) #print open port number
 
-def runContainer(testType,dataframeN):
-    images = dockerClient.images.list(all=True)
-    if imageName in ' '.join(map(str, images)):
-        print("Image exist, starting container..")
-        dockerClient.containers.run(imageName+":latest", environment = {"TEST_TYPE":testType,"DATAFRAME_N":dataframeN,"CALC_N":calcN})
-    else:
-        print("Image doesn't exist, need to create it!")
-        dockerClient.images.build(path = "./", tag = imageName)
-        dockerClient.containers.run(imageName+":latest", environment = {"TEST_TYPE":testType,"DATAFRAME_N":dataframeN,"CALC_N":calcN})
+        serv.close() #close connection
+
+# create container with image_name
+def create_docker_run(image_name:str, user:int):
+    dockerClient.containers.run(image_name, "sleep infinity", detach=True)
 
 # restart the bot container with docker container id
-def start_bot(bot_id:str):
-    containers = getContainers()
-    for container in containers:
-        if imageName in str(container.image):
-            print("Deleting old container {}".format(container.name))
-            try:
-                container.start()
-            except Exception as e:
-                print("Error deleting old container {}".format(container.name))
-                print(e)
+def start_containers(container_id:str):
+    try:
+        containers = dockerClient.containers.get(container_id)
+    except:
+        return None
+    containers.start()
+    container_state = containers.attrs["State"]
+    return container_state["Status"]
 
 # stop the bot container with docker container id
-def stop_bot(bot_id:str):
-    containers = getContainers()
-    for container in containers:
-        if imageName in str(container.image):
-            print("Deleting old container {}".format(container.name))
-            try:
-                container.stop()
-            except Exception as e:
-                print("Error deleting old container {}".format(container.name))
-                print(e)
+def stop_containers(container_id:str):
+    try:
+        containers = dockerClient.containers.get(container_id)
+    except:
+        return None
+    containers.stop()
+    container_state = containers.attrs["State"]
+    return container_state["Status"]
 
 # delete the bot container with docker container id
-def remove_bot(bot_id:str):
-    containers = getContainers()
-    for container in containers:
-        if imageName in str(container.image):
-            print("Deleting old container {}".format(container.name))
-            try:
-                container.stop()
-                container.remove()
-            except Exception as e:
-                print("Error deleting old container {}".format(container.name))
-                print(e)
+def remove_containers(container_id:str):
+    try:
+        containers = dockerClient.containers.get(container_id)
+    except:
+        return None
+    containers.stop()
+    containers.remove()
+    container_state = containers.attrs["State"]
+    return container_state["Status"]
 
 if __name__ == '__main__':
     print(getContainers())
-    print(get_status_Containers())
+    print(get_status_Containers("5a7249db0be943566135a5729"))
+
+    # create_docker_run("bot:test", 1)
+    # print(stop_containers("ae45490812fb5266149c4c8eac91751394e21263237373494a1022f3d1eab5fd"))
+
+    # print(start_containers("ae45490812fb5266149c4c8eac91751394e21263237373494a1022f3d1eab5fd"))
+    print(remove_containers("ae45490812fb5266149c4c8eac91751394e21263237373494a1022f3d1eab5fd"))
+
+    checkout_ports()
