@@ -40,6 +40,42 @@ def read_user(api: schemas.APIBase, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return db_api
 
+# Delete Users
+@app.post("/admin/delete/users/",)
+def create_user(token_str: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)):
+    if not token.verify_token(token=token_str):
+        raise HTTPException(status_code=404, detail="User don't sign in")
+    if token.decode_access_token(token=token_str) != "admin@mygpt.com":
+        raise HTTPException(status_code=404, detail="This bot does not exist")
+    
+    if crud.delete_user(db, email=email):
+        return {"result":"Successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Failed")
+
+
+# Delete API
+@app.post("/admin/delete/bot/{bot_username}")
+def create_user(token_str: Annotated[str, Depends(oauth2_scheme)], bot_username:str, db: Session = Depends(get_db)):
+    if not token.verify_token(token=token_str):
+        raise HTTPException(status_code=404, detail="User don't sign in")
+    if token.decode_access_token(token=token_str) != "admin@mygpt.com":
+        raise HTTPException(status_code=404, detail="This bot does not exist")
+    bots = crud.bots(db)
+    if crud.delete_bot(db, bot_username=bot_username):
+        return {"result":"Successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Failed")
+
+@app.post("/admin/bots")
+def bots(token_str:Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)):
+    if not token.verify_token(token=token_str):
+        raise HTTPException(status_code=404, detail="User don't sign in")
+    if token.decode_access_token(token=token_str) != "admin@mygpt.com":
+        raise HTTPException(status_code=404, detail="This bot does not exist")
+    bots = crud.bots(db)
+    return {"bots":bots}
+
 if __name__ == "__main__":
     #os.remove('clone_voice_source/New_Hero.mp3')
     uvicorn.run(app, host="localhost", port=8000)

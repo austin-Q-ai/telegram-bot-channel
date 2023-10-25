@@ -11,20 +11,21 @@ Telegram_key = os.getenv('Telegram_key')
 
 VIDEO_SERVICE = os.getenv("VIDEO_SERVICE")
 VIDEO_KEY = os.getenv('VIDEO_KEY')
+VIDEO_ID = os.getenv('VIDEO_ID')
 
 # Report errors in connection to APIs
 def report_controller(url:str, status:int, description:str):
     print("Error: ", url, status, description)
-    url = f'{BOT_CONTROLLER}/reporter'
+    target = f'{BOT_CONTROLLER}/reporter'
     data = {
-        "url": url,
+        "target": url,
         "status":status,
         "description":description
         }
     headers={'Authorization': f'Bearer {Telegram_key}'}
     try:
         response = requests.post(
-            url=url,
+            url=target,
             json=data,
             headers=headers
             )
@@ -61,19 +62,19 @@ def video_key_error(url, res):
     return ANSWER_2
 
 def generating_default_answer(file_path):
-    url= f'{VIDEO_SERVICE}/tts/{VIDEO_KEY}/video/'
+    url= f'{VIDEO_SERVICE}/video/{VIDEO_ID}'
+    headers={'Authorization': f'Bearer {VIDEO_KEY}'}
     data = {
         "text":ANSWER_1
     }
     try:
         response = requests.get(
             url=url,
-            json = data
+            json=data,
+            headers=headers
         )
     except:
-        video_server_error(url)
-        return False
-    
+        return video_server_error(url)
     if response.status_code == 200:
         with open(file_path, "wb") as f:
             f.write(response.content)

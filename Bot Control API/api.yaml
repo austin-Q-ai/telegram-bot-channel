@@ -1,0 +1,359 @@
+openapi: 3.0.2
+info:
+  title: Bot Control API 0.0.1
+  description: This is api for auto creating and maintaining telegram bots using Expert brain API and Video API.
+    
+  termsOfService: https://ckapital.io/
+  contact:
+    email: dalesjury0218@gmail.com
+  license:
+    name: Lambda Vision
+    url: https://ckapital.io/
+  version: 0.0.1
+
+
+tags:
+  - name: users
+    description: Operations about user
+  - name: bot
+    description: Main control operation about bots
+  - name: reporter
+    description: Report errors
+paths:
+  /users/:
+    post:
+      tags:
+        - users
+      summary: Create User
+      operationId: create_user_users__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+        - users
+      summary: Create User
+      operationId: create_user_users__delete
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+        - OAuth2PasswordBearer: []
+  /logins/:
+    post:
+      tags:
+        - users
+      summary: Login User
+      operationId: login_user_logins__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Userlogin'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /bot/create:
+    post:
+      tags:
+        - users
+      summary: Create Bot
+      operationId: create_bot_bot_create_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BotBase'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bot'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - OAuth2PasswordBearer: []
+  /bot/:
+    get:
+      tags:
+        - bot
+      summary: Get Bot Info
+      operationId: get_bot_info_bot__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bot'
+      security:
+        - OAuth2PasswordBearer: []
+  /bot/start:
+    post:
+      tags:
+        - bot
+      summary: Start Bot
+      operationId: start_bot_bot_start_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+        - OAuth2PasswordBearer: []
+  /bot/stop:
+    post:
+      tags:
+        - bot
+      summary: Stop Bot
+      operationId: stop_bot_bot_stop_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+        - OAuth2PasswordBearer: []
+  /bot/delete:
+    delete:
+      tags:
+        - bot
+      summary: Delete Bot
+      operationId: delete_bot_bot_delete_delete
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+        - OAuth2PasswordBearer: []
+  /reporter/:
+    post:
+      tags:
+        - reporter
+      summary: Reporter
+      operationId: reporter_reporter__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Report'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - OAuth2PasswordBearer: []
+  /admin/bots:
+    post:
+      tags:
+        - admin
+      summary: Bots
+      operationId: bots_admin_bots_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+        - OAuth2PasswordBearer: []
+components:
+  schemas:
+    Bot:
+      title: Bot
+      required:
+        - bot_username
+        - bot_name
+        - brain_id
+        - video_id
+        - id
+        - is_active
+        - container_id
+        - status
+      type: object
+      properties:
+        bot_username:
+          title: Bot Username
+          type: string
+        bot_name:
+          title: Bot Name
+          type: string
+        brain_id:
+          title: Brain Id
+          type: string
+        video_id:
+          title: Video Id
+          type: string
+        id:
+          title: Id
+          type: integer
+        is_active:
+          title: Is Active
+          type: boolean
+        container_id:
+          title: Container Id
+          type: string
+        status:
+          title: Status
+          type: string
+    BotBase:
+      title: BotBase
+      required:
+        - bot_username
+        - bot_name
+        - brain_id
+        - video_id
+        - bot_token
+      type: object
+      properties:
+        bot_username:
+          title: Bot Username
+          type: string
+        bot_name:
+          title: Bot Name
+          type: string
+        brain_id:
+          title: Brain Id
+          type: string
+        video_id:
+          title: Video Id
+          type: string
+        bot_token:
+          title: Bot Token
+          type: string
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    Report:
+      title: Report
+      required:
+        - target
+        - status
+        - description
+      type: object
+      properties:
+        target:
+          title: Target
+          type: string
+        status:
+          title: Status
+          type: integer
+        description:
+          title: Description
+          type: string
+    UserCreate:
+      title: UserCreate
+      required:
+        - email
+        - brain_api
+        - video_api
+        - password
+      type: object
+      properties:
+        email:
+          title: Email
+          type: string
+        brain_api:
+          title: Brain Api
+          type: string
+        video_api:
+          title: Video Api
+          type: string
+        password:
+          title: Password
+          type: string
+    Userlogin:
+      title: Userlogin
+      required:
+        - email
+        - password
+      type: object
+      properties:
+        email:
+          title: Email
+          type: string
+        password:
+          title: Password
+          type: string
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+  securitySchemes:
+    OAuth2PasswordBearer:
+      type: oauth2
+      flows:
+        password:
+          scopes: {}
+          tokenUrl: token

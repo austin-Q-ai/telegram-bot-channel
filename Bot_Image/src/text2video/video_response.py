@@ -8,17 +8,20 @@ load_dotenv(dotenv_path='config.env')
 
 VIDEO_SERVICE = os.getenv("VIDEO_SERVICE")
 VIDEO_KEY = os.getenv('VIDEO_KEY')
+VIDEO_ID = os.getenv('VIDEO_ID')
 # def get_response(chat_id:str, text:str):
 
 def get_video_response(text:str):
-    url= f'{VIDEO_SERVICE}/tts/{VIDEO_KEY}/video/'
+    url= f'{VIDEO_SERVICE}/video/{VIDEO_ID}'
+    headers={'Authorization': f'Bearer {VIDEO_KEY}'}
     data = {
         "text":text
     }
     try:
         response = requests.get(
             url=url,
-            json = data
+            json=data,
+            headers=headers
         )
     except:
         return issue.video_server_error(url)
